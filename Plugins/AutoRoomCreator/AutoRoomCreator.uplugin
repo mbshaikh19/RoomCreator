@@ -1,0 +1,24 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "AutoRoomCreator",
+	"Description": "",
+	"Category": "Other",
+	"CreatedBy": "Mujahid Shaikh",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "AutoRoomCreator",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	]
+}
