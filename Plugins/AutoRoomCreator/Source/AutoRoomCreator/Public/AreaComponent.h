@@ -37,7 +37,9 @@ public:
 	UFUNCTION()
 	void SetRandomSeed(FRandomStream &newStream);
 
-	void PlaceActorsInGrid();
+	void PlaceObjectsInGrid();
+
+	void PlaceObjectsByBFD();
 
 	void AssignDynamicDelegate(AFloorAreaManager* floorAreaManager);
 

@@ -40,8 +40,8 @@ FVector APlaceableActor::GetStaticMeshComponentSize()
 	{
 		if (staticMeshComponent->GetStaticMesh())
 		{
-			FVector size = staticMeshComponent->GetComponentScale() * staticMeshComponent->GetStaticMesh()->GetBoundingBox().GetSize();
-			return size;//FVector(size.X / 2.0f, size.Y / 2.0f, 0.0f);
+			FVector size = staticMeshComponent->GetComponentScale() * staticMeshComponent->Bounds.BoxExtent;
+			return size*2.0f;
 		}
 	}
 	return FVector::ZeroVector;
@@ -60,11 +60,13 @@ FVector APlaceableActor::GetActorSize()
 {
 	FVector meshCompSize = GetStaticMeshComponentSize();
 	FVector boxCompSize = GetBoxComponentSize();
-	if ((meshCompSize.X * meshCompSize.Y) > (boxCompSize.X * boxCompSize.Y))
+	//if ((meshCompSize.X * meshCompSize.Y) > (boxCompSize.X * boxCompSize.Y))
+	if (meshCompSize.Length() > boxCompSize.Length())
 	{
+		//UE_LOG(LogTemp, Warning, TEXT("oooo meshCompSize = %s  boxCompSize = %s step 01 "), *meshCompSize.ToString(),*boxCompSize.ToString());
 		return meshCompSize;
 	}
-
-	return boxCompSize;
+	//UE_LOG(LogTemp, Warning, TEXT("oooo meshCompSize = %s  boxCompSize = %s step 02 "), *meshCompSize.ToString(), *boxCompSize.ToString());
+	return boxCompSize * 2.0f;
 }
 

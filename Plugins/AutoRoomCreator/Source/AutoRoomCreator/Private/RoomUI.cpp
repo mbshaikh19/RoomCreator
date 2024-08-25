@@ -22,23 +22,23 @@ void URoomUI::NativeConstruct()
 
 void URoomUI::OnButtonClicked()
 {
-    UE_LOG(LogTemp, Warning, TEXT("oooo OnButtonClicked() step 01"));
+    //UE_LOG(LogTemp, Warning, TEXT("oooo OnButtonClicked() step 01"));
     if (seedInputTextBox)
     {
-        UE_LOG(LogTemp, Warning, TEXT("oooo OnButtonClicked() step 02"));
+        //UE_LOG(LogTemp, Warning, TEXT("oooo OnButtonClicked() step 02"));
         int32 newSeed = 0;
         if (FDefaultValueHelper::ParseInt(seedInputTextBox->GetText().ToString(), newSeed))
         {
-            UE_LOG(LogTemp, Warning, TEXT("oooo OnButtonClicked() step 03"));
+           // UE_LOG(LogTemp, Warning, TEXT("oooo OnButtonClicked() step 03"));
             if (floorAreaManager->seedModify.IsBound())
             {
                 newStream.Initialize(newSeed);
-                UE_LOG(LogTemp, Warning, TEXT("oooo OnButtonClicked() step 04"));
+                //UE_LOG(LogTemp, Warning, TEXT("oooo OnButtonClicked() step 04"));
                 floorAreaManager->seedModify.Broadcast(newStream);
             }
         }
         else {
-            UE_LOG(LogTemp, Warning, TEXT("oooo OnButtonClicked() step 05"));
+            //UE_LOG(LogTemp, Warning, TEXT("oooo OnButtonClicked() step 05"));
         }
     }
 
