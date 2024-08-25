@@ -13,6 +13,14 @@ class APlaceableActor;
 class AFloorAreaManager;
 
 UENUM(BlueprintType)
+enum class EGridDivisionMode : uint8
+{
+	OneDirection UMETA(DisplayName = "One Direction"),
+	TwoDirection UMETA(DisplayName = "Two Direction")
+};
+
+
+UENUM(BlueprintType)
 enum class EPlacementAlgoType : uint8
 {
 	GridBased UMETA(DisplayName = "Grid Algorithm"),
@@ -41,6 +49,10 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Placeable")
 	ECallType contentGeneration;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Placeable")
+	EGridDivisionMode gridDivisionMode;
+
 private:
 	TArray<APlaceableActor*> spawnedPlaceableObjects;
 

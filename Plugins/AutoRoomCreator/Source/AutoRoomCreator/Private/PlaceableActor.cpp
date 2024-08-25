@@ -63,10 +63,10 @@ FVector APlaceableActor::GetActorSize()
 	//if ((meshCompSize.X * meshCompSize.Y) > (boxCompSize.X * boxCompSize.Y))
 	if (meshCompSize.Length() > boxCompSize.Length())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("oooo meshCompSize = %s  boxCompSize = %s step 01 "), *meshCompSize.ToString(),*boxCompSize.ToString());
+		//UE_LOG(LogTemp, Warning, TEXT("oooo meshCompSize = %s  boxCompSize = %s step 01 "), *meshCompSize.ToString(),*boxCompSize.ToString());
 		return meshCompSize;
 	}
-	UE_LOG(LogTemp, Warning, TEXT("oooo meshCompSize = %s  boxCompSize = %s step 02 "), *meshCompSize.ToString(), *boxCompSize.ToString());
+	//UE_LOG(LogTemp, Warning, TEXT("oooo meshCompSize = %s  boxCompSize = %s step 02 "), *meshCompSize.ToString(), *boxCompSize.ToString());
 	return boxCompSize * 2.0f;
 }
 
