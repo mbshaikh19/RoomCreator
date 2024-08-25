@@ -42,4 +42,6 @@ public:
 	void AssignDynamicDelegate(AFloorAreaManager* floorAreaManager);
 
 	void CleanPreviousResult();
+
+	void shuffleList(FRandomStream& newStream);
 };

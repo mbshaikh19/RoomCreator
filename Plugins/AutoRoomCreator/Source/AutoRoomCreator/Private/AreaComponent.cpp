@@ -17,6 +17,7 @@ UAreaComponent::UAreaComponent(const FObjectInitializer& ObjectInitializer)
 void UAreaComponent::SetRandomSeed(FRandomStream& newStream)
 {
     CleanPreviousResult();
+    shuffleList(newStream);
 	UE_LOG(LogTemp, Warning, TEXT("oooo Seed modified () UAreaComponent"));
     PlaceActorsInGrid();
 }
@@ -67,12 +68,12 @@ void UAreaComponent::PlaceActorsInGrid()
         int32 col = i % gridSize;
 
         FVector gridPosition = FVector(col * cellSizeX, row * cellSizeY, 0.0f);
-
+        gridPosition += boxLocation;
         // Rotate the grid position by the yaw of the BoxComponent
         FRotator boxRotationYaw(0.0f, boxRotation.Yaw, 0.0f);
         FVector gridRotatedPosition = UKismetMathLibrary::RotateAngleAxis(gridPosition, -boxRotation.Yaw, FVector(0.0f, 0.0f, 1.0f)) + boxLocation - FVector(boxMaxSizeX / 2.0f, boxMaxSizeY / 2.0f, 0.0f);
-
-        gridPositions.Add(gridRotatedPosition);
+        UE_LOG(LogTemp, Warning, TEXT("oooo UAreaComponent PlaceActorsInGrid() gridPosition = %s"),*gridPosition.ToString());
+        gridPositions.Add(gridPosition);
     }
 
     // Spawn actors considering their sizes
@@ -113,5 +114,22 @@ void UAreaComponent::CleanPreviousResult()
     {
         if (spawnedActor)
             spawnedActor->Destroy();
+    }
+}
+
+void UAreaComponent::shuffleList(FRandomStream& newStream)
+{
+    int32 size = placeableObjectsList.Num();
+    if (size <= 1)
+    {
+        return;
+    }
+
+    for (int32 indexA = size - 1; indexA > 0; --indexA)
+    {
+        
+        int32 indexB = newStream.RandHelper(indexA);
+
+        placeableObjectsList.Swap(indexA, indexB);
     }
 }
