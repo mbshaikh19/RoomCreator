@@ -68,4 +68,6 @@ public:
 	void CleanPreviousResult();
 
 	void shuffleList(FRandomStream& newStream);
+
+	void DelayedCall();
 };

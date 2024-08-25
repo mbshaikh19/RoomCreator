@@ -6,6 +6,7 @@
 #include "PlaceableActor.h"
 #include "Engine/World.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "TimerManager.h"
 
 UAreaComponent::UAreaComponent(const FObjectInitializer& ObjectInitializer)
 	:Super(ObjectInitializer)
@@ -35,7 +36,9 @@ void UAreaComponent::BeginPlay()
 	UE_LOG(LogTemp, Warning, TEXT("oooo actor name = %s UAreaComponent = %s  BeginPlay() "),*GetAttachParentActor()->GetName(),*GetName());
     if (contentGeneration == ECallType::AutoGenerate)
     {
-        SetRandomSeed(randomSeed);
+        FTimerHandle timerHandle;
+        GetWorld()->GetTimerManager().SetTimer(timerHandle, this, &UAreaComponent::DelayedCall, 0.2f, false);
+//      SetRandomSeed(randomSeed);
     }
 }
 
@@ -55,7 +58,6 @@ void UAreaComponent::PlaceObjectsInGrid()
     int32 placeableListLength = placeableObjectsList.Num();
 	if (placeableListLength <= 0)
 	{
-		//UE_LOG(LogTemp, Warning, TEXT("oooo PlaceActorsInGrid() placeableObjectsList is empty"));
 		return;
 	}
 
@@ -67,23 +69,21 @@ void UAreaComponent::PlaceObjectsInGrid()
     float boxMaxSizeX = boxExtent.X * 2.0f;
     float boxMaxSizeY = boxExtent.Y * 2.0f;
 
-    // Calculate grid cells (assuming roughly square cells for simplicity)
     int32 gridSize = FMath::CeilToInt(FMath::Sqrt((float)placeableListLength));
     float cellSizeX = boxMaxSizeX / gridSize;
     float cellSizeY = boxMaxSizeY / gridSize;
-    //UE_LOG(LogTemp, Warning, TEXT("oooo UAreaComponent PlaceActorsInGrid() gridSize = %d , cellSizeX = %f , cellSizeY = %f "), gridSize, cellSizeX, cellSizeY);
-    // Generate grid positions
+    UE_LOG(LogTemp, Warning, TEXT("oooo actor name = %s UAreaComponent = %s  gridSize = %d  cellSizeX = %f cellSizeY = %f "), *GetAttachParentActor()->GetName(), *GetName(), gridSize, cellSizeX, cellSizeY);
     for (int32 i = 0; i < placeableListLength; ++i)
     {
         int32 row = i / gridSize;
         int32 col = i % gridSize;
 
-        FVector gridPosition = FVector(col * cellSizeX, row * cellSizeY, boxLocation.Z);
+        FVector gridPosition = FVector(col * cellSizeX, row * cellSizeY, 0.0f);
         gridPosition += boxLocation;
-        // Rotate the grid position by the yaw of the BoxComponent
+
         FRotator boxRotationYaw(0.0f, boxRotation.Yaw, 0.0f);
         FVector gridRotatedPosition = UKismetMathLibrary::RotateAngleAxis(gridPosition, -boxRotation.Yaw, FVector(0.0f, 0.0f, 1.0f)) + boxLocation - FVector(boxMaxSizeX / 2.0f, boxMaxSizeY / 2.0f, 0.0f);
-        //UE_LOG(LogTemp, Warning, TEXT("oooo UAreaComponent PlaceActorsInGrid() gridPosition = %s"),*gridPosition.ToString());
+
         gridPositions.Add(gridPosition);
     }
 
@@ -102,7 +102,7 @@ void UAreaComponent::PlaceObjectsInGrid()
         if (spawnedPlaceable)
         {
             FVector placeableActorSize = spawnedPlaceable->GetActorSize();
-            spawnedPlaceable->SetActorLocation(currentPosition - placeableActorSize);
+            //spawnedPlaceable->SetActorLocation(FVector(currentPosition.X - placeableActorSize.X, currentPosition.Y - placeableActorSize.Y, currentPosition.Z));
             spawnedPlaceableObjects.Add(spawnedPlaceable);
         }
 
@@ -180,11 +180,12 @@ void UAreaComponent::PlaceObjectsByBFD()
             }
             else
             {
+                //index++;
                 subarea->Destroy();
                 //spawnedPlaceableObjects.Remove(subarea);
                 spawnedPlaceableObjects.RemoveAt(index);
                 // Handle the case where the box doesn't fit
-               // UE_LOG(LogTemp, Warning, TEXT("Box %s does not fit in the defined area"), *subarea->GetName());
+                UE_LOG(LogTemp, Warning, TEXT("Box %s does not fit in the defined area"), *subarea->GetName());
             }
         }
 }
@@ -224,4 +225,9 @@ void UAreaComponent::shuffleList(FRandomStream& newStream)
 
         placeableObjectsList.Swap(indexA, indexB);
     }
+}
+
+void UAreaComponent::DelayedCall()
+{
+    SetRandomSeed(randomSeed);
 }
