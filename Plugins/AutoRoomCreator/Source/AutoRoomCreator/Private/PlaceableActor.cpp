@@ -34,3 +34,37 @@ void APlaceableActor::Tick(float DeltaTime)
 
 }
 
+FVector APlaceableActor::GetStaticMeshComponentSize()
+{
+	if (staticMeshComponent)
+	{
+		if (staticMeshComponent->GetStaticMesh())
+		{
+			FVector size = staticMeshComponent->GetComponentScale() * staticMeshComponent->GetStaticMesh()->GetBoundingBox().GetSize();
+			return size;//FVector(size.X / 2.0f, size.Y / 2.0f, 0.0f);
+		}
+	}
+	return FVector::ZeroVector;
+}
+
+FVector APlaceableActor::GetBoxComponentSize()
+{
+	if (areaComponent)
+	{
+		return areaComponent->GetScaledBoxExtent();
+	}
+	return FVector::ZeroVector;
+}
+
+FVector APlaceableActor::GetActorSize()
+{
+	FVector meshCompSize = GetStaticMeshComponentSize();
+	FVector boxCompSize = GetBoxComponentSize();
+	if ((meshCompSize.X * meshCompSize.Y) > (boxCompSize.X * boxCompSize.Y))
+	{
+		return meshCompSize;
+	}
+
+	return boxCompSize;
+}
+

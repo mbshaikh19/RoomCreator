@@ -34,4 +34,9 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	FVector GetStaticMeshComponentSize();
+
+	FVector GetBoxComponentSize();
+
+	FVector GetActorSize();
 };

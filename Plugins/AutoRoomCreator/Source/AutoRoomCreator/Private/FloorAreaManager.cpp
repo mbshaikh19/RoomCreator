@@ -2,6 +2,9 @@
 
 
 #include "FloorAreaManager.h"
+#include "AreaComponent.h"
+#include "PlaceableActor.h"
+#include "Kismet/GameplayStatics.h"
 
 AFloorAreaManager* AFloorAreaManager::floorAreaManager;
 // Sets default values
@@ -17,8 +20,20 @@ void AFloorAreaManager::BeginPlay()
 {
 	Super::BeginPlay();
 	floorAreaManager = this;
-
+	UE_LOG(LogTemp, Warning, TEXT(" oooo AFloorAreaManager BeginPlay() step 01"));
 	seedModify.AddDynamic(this, &AFloorAreaManager::SeedModified);
+
+	APlaceableActor* placeableActor = Cast<APlaceableActor>(UGameplayStatics::GetActorOfClass(GetWorld(), APlaceableActor::StaticClass()));
+	if (placeableActor)
+	{
+		UE_LOG(LogTemp, Warning, TEXT(" oooo AFloorAreaManager BeginPlay() step 03"));
+		UAreaComponent* areaComponent = placeableActor->GetComponentByClass<UAreaComponent>();
+		if (areaComponent)
+		{
+			areaComponent->AssignDynamicDelegate(this);
+			UE_LOG(LogTemp, Warning, TEXT(" oooo AFloorAreaManager BeginPlay() step 04"));
+		}
+	}
 }
 
 // Called every frame

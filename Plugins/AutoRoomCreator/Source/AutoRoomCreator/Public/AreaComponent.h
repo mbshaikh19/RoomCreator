@@ -10,6 +10,8 @@
  * 
  */
 class APlaceableActor;
+class AFloorAreaManager;
+
 UCLASS()
 class AUTOROOMCREATOR_API UAreaComponent : public UBoxComponent
 {
@@ -34,4 +36,10 @@ public:
 
 	UFUNCTION()
 	void SetRandomSeed(FRandomStream &newStream);
+
+	void PlaceActorsInGrid();
+
+	void AssignDynamicDelegate(AFloorAreaManager* floorAreaManager);
+
+	void CleanPreviousResult();
 };
