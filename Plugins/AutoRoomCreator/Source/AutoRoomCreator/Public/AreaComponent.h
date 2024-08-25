@@ -12,6 +12,20 @@
 class APlaceableActor;
 class AFloorAreaManager;
 
+UENUM(BlueprintType)
+enum class EPlacementAlgoType : uint8
+{
+	GridBased UMETA(DisplayName = "Grid Algorithm"),
+	BFDBased UMETA(DisplayName="Best Fit Decreasing Algorithm")
+};
+
+UENUM(BlueprintType)
+enum class ECallType : uint8
+{
+	AutoGenerate,
+	ManualGenerate
+};
+
 UCLASS()
 class AUTOROOMCREATOR_API UAreaComponent : public UBoxComponent
 {
@@ -21,8 +35,16 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Placeable")
 	TArray<TSubclassOf<APlaceableActor>> placeableObjectsList;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Placeable")
+	EPlacementAlgoType placementAlgorithm;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Placeable")
+	ECallType contentGeneration;
+private:
 	TArray<APlaceableActor*> spawnedPlaceableObjects;
+
+	FRandomStream randomSeed;
 	
 protected:
 	virtual void BeginPlay() override;

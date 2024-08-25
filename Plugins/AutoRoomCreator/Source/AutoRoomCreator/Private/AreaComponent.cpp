@@ -16,16 +16,27 @@ UAreaComponent::UAreaComponent(const FObjectInitializer& ObjectInitializer)
 
 void UAreaComponent::SetRandomSeed(FRandomStream& newStream)
 {
+    randomSeed = newStream;
     CleanPreviousResult();
     shuffleList(newStream);
-	//UE_LOG(LogTemp, Warning, TEXT("oooo Seed modified () UAreaComponent"));
-    PlaceObjectsByBFD();
+    if (placementAlgorithm == EPlacementAlgoType::BFDBased)
+    {
+        PlaceObjectsByBFD();
+    }
+    else
+    {
+        PlaceObjectsInGrid();
+    }
 }
 
 void UAreaComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	//UE_LOG(LogTemp, Warning, TEXT("oooo BeginPlay () UAreaComponent"));
+	UE_LOG(LogTemp, Warning, TEXT("oooo actor name = %s UAreaComponent = %s  BeginPlay() "),*GetAttachParentActor()->GetName(),*GetName());
+    if (contentGeneration == ECallType::AutoGenerate)
+    {
+        SetRandomSeed(randomSeed);
+    }
 }
 
 void UAreaComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -39,72 +50,72 @@ void UAreaComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
     CleanPreviousResult();
 }
 
-//void UAreaComponent::PlaceActorsInGrid()
-//{
-//    int32 placeableListLength = placeableObjectsList.Num();
-//	if (placeableListLength <= 0)
-//	{
-//		UE_LOG(LogTemp, Warning, TEXT("oooo PlaceActorsInGrid() placeableObjectsList is empty"));
-//		return;
-//	}
-//
-//    FVector boxExtent = GetScaledBoxExtent();
-//    FRotator boxRotation = GetComponentRotation();
-//    FVector boxLocation = GetComponentLocation();
-//    TArray<FVector> gridPositions;
-//
-//    float boxMaxSizeX = boxExtent.X * 2.0f;
-//    float boxMaxSizeY = boxExtent.Y * 2.0f;
-//
-//    // Calculate grid cells (assuming roughly square cells for simplicity)
-//    int32 gridSize = FMath::CeilToInt(FMath::Sqrt((float)placeableListLength));
-//    float cellSizeX = boxMaxSizeX / gridSize;
-//    float cellSizeY = boxMaxSizeY / gridSize;
-//    //UE_LOG(LogTemp, Warning, TEXT("oooo UAreaComponent PlaceActorsInGrid() gridSize = %d , cellSizeX = %f , cellSizeY = %f "), gridSize, cellSizeX, cellSizeY);
-//    // Generate grid positions
-//    for (int32 i = 0; i < placeableListLength; ++i)
-//    {
-//        int32 row = i / gridSize;
-//        int32 col = i % gridSize;
-//
-//        FVector gridPosition = FVector(col * cellSizeX, row * cellSizeY, 0.0f);
-//        gridPosition += boxLocation;
-//        // Rotate the grid position by the yaw of the BoxComponent
-//        FRotator boxRotationYaw(0.0f, boxRotation.Yaw, 0.0f);
-//        FVector gridRotatedPosition = UKismetMathLibrary::RotateAngleAxis(gridPosition, -boxRotation.Yaw, FVector(0.0f, 0.0f, 1.0f)) + boxLocation - FVector(boxMaxSizeX / 2.0f, boxMaxSizeY / 2.0f, 0.0f);
-//        UE_LOG(LogTemp, Warning, TEXT("oooo UAreaComponent PlaceActorsInGrid() gridPosition = %s"),*gridPosition.ToString());
-//        gridPositions.Add(gridPosition);
-//    }
-//
-//    // Spawn actors considering their sizes
-//    int32 placeableListIndex = 0;
-//    for (const FVector& currentPosition : gridPositions)
-//    {
-//        if (placeableListIndex >= placeableListLength) 
-//            break;
-//
-//        TSubclassOf<APlaceableActor> placeableToSpawn = placeableObjectsList[placeableListIndex];
-//        FActorSpawnParameters spawnParams;
-//
-//        APlaceableActor* spawnedPlaceable = GetWorld()->SpawnActor<APlaceableActor>(placeableToSpawn, currentPosition, FRotator(0.0f, 0.0f, 0.0f), spawnParams);
-//
-//        if (spawnedPlaceable)
-//        {
-//            FVector placeableActorSize = spawnedPlaceable->GetActorSize();
-//            spawnedPlaceable->SetActorLocation(currentPosition - placeableActorSize);
-//            spawnedPlaceableObjects.Add(spawnedPlaceable);
-//        }
-//
-//        placeableListIndex++;
-//    } 
-//}
+void UAreaComponent::PlaceObjectsInGrid()
+{
+    int32 placeableListLength = placeableObjectsList.Num();
+	if (placeableListLength <= 0)
+	{
+		//UE_LOG(LogTemp, Warning, TEXT("oooo PlaceActorsInGrid() placeableObjectsList is empty"));
+		return;
+	}
+
+    FVector boxExtent = GetScaledBoxExtent();
+    FRotator boxRotation = GetComponentRotation();
+    FVector boxLocation = GetComponentLocation();
+    TArray<FVector> gridPositions;
+
+    float boxMaxSizeX = boxExtent.X * 2.0f;
+    float boxMaxSizeY = boxExtent.Y * 2.0f;
+
+    // Calculate grid cells (assuming roughly square cells for simplicity)
+    int32 gridSize = FMath::CeilToInt(FMath::Sqrt((float)placeableListLength));
+    float cellSizeX = boxMaxSizeX / gridSize;
+    float cellSizeY = boxMaxSizeY / gridSize;
+    //UE_LOG(LogTemp, Warning, TEXT("oooo UAreaComponent PlaceActorsInGrid() gridSize = %d , cellSizeX = %f , cellSizeY = %f "), gridSize, cellSizeX, cellSizeY);
+    // Generate grid positions
+    for (int32 i = 0; i < placeableListLength; ++i)
+    {
+        int32 row = i / gridSize;
+        int32 col = i % gridSize;
+
+        FVector gridPosition = FVector(col * cellSizeX, row * cellSizeY, boxLocation.Z);
+        gridPosition += boxLocation;
+        // Rotate the grid position by the yaw of the BoxComponent
+        FRotator boxRotationYaw(0.0f, boxRotation.Yaw, 0.0f);
+        FVector gridRotatedPosition = UKismetMathLibrary::RotateAngleAxis(gridPosition, -boxRotation.Yaw, FVector(0.0f, 0.0f, 1.0f)) + boxLocation - FVector(boxMaxSizeX / 2.0f, boxMaxSizeY / 2.0f, 0.0f);
+        //UE_LOG(LogTemp, Warning, TEXT("oooo UAreaComponent PlaceActorsInGrid() gridPosition = %s"),*gridPosition.ToString());
+        gridPositions.Add(gridPosition);
+    }
+
+    // Spawn actors considering their sizes
+    int32 placeableListIndex = 0;
+    for (const FVector& currentPosition : gridPositions)
+    {
+        if (placeableListIndex >= placeableListLength) 
+            break;
+
+        TSubclassOf<APlaceableActor> placeableToSpawn = placeableObjectsList[placeableListIndex];
+        FActorSpawnParameters spawnParams;
+
+        APlaceableActor* spawnedPlaceable = GetWorld()->SpawnActor<APlaceableActor>(placeableToSpawn, currentPosition, FRotator(0.0f, 0.0f, 0.0f), spawnParams);
+
+        if (spawnedPlaceable)
+        {
+            FVector placeableActorSize = spawnedPlaceable->GetActorSize();
+            spawnedPlaceable->SetActorLocation(currentPosition - placeableActorSize);
+            spawnedPlaceableObjects.Add(spawnedPlaceable);
+        }
+
+        placeableListIndex++;
+    } 
+}
 
 void UAreaComponent::PlaceObjectsByBFD()
 {
     int32 placeableListLength = placeableObjectsList.Num();
 	if (placeableListLength <= 0)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("oooo PlaceActorsInGrid() placeableObjectsList is empty"));
+		//UE_LOG(LogTemp, Warning, TEXT("oooo PlaceActorsInGrid() placeableObjectsList is empty"));
 		return;
 	}
 
@@ -119,7 +130,7 @@ void UAreaComponent::PlaceObjectsByBFD()
     {
         APlaceableActor* parentArea = GetWorld()->SpawnActor<APlaceableActor>(subareaSpawnClass, FVector::ZeroVector, FRotator::ZeroRotator);
         spawnedPlaceableObjects.Add(parentArea);
-        UE_LOG(LogTemp, Warning, TEXT("oooo PlaceActorsInGrid() spawned actor name = %s"), *parentArea->GetName());
+        //UE_LOG(LogTemp, Warning, TEXT("oooo PlaceActorsInGrid() spawned actor name = %s"), *parentArea->GetName());
     }
         FVector2D CurrentPosition = areaMin;
 
@@ -137,7 +148,7 @@ void UAreaComponent::PlaceObjectsByBFD()
 
             bool bDoesRotatedBoxFit = CurrentPosition.X + RotatedBoxSize.X <= areaMax.X &&
                 CurrentPosition.Y + RotatedBoxSize.Y <= areaMax.Y;
-            UE_LOG(LogTemp, Warning, TEXT("oooo PlaceActorsInGrid() current actor name = %s"), *spawnedPlaceableObjects[index]->GetName());
+            //UE_LOG(LogTemp, Warning, TEXT("oooo PlaceActorsInGrid() current actor name = %s"), *spawnedPlaceableObjects[index]->GetName());
             if (bDoesBoxFit || bDoesRotatedBoxFit)
             {
                 FVector2D fitBoxSize;
@@ -156,7 +167,7 @@ void UAreaComponent::PlaceObjectsByBFD()
                 FVector NewLocation(CurrentPosition.X + fitBoxSize.X / 2, CurrentPosition.Y + fitBoxSize.Y / 2, 0.0f);
                 subarea->SetActorLocation(NewLocation);
                 subarea->SetActorRotation(BoxRotation);
-                UE_LOG(LogTemp, Warning, TEXT("oooo PlaceActorsInGrid() name = %s location = %s"), *subarea->GetName(),*NewLocation.ToString());
+                //UE_LOG(LogTemp, Warning, TEXT("oooo PlaceActorsInGrid() name = %s location = %s"), *subarea->GetName(),*NewLocation.ToString());
                 // Update the current position for the next box
                 CurrentPosition.X += fitBoxSize.X;
 
@@ -173,7 +184,7 @@ void UAreaComponent::PlaceObjectsByBFD()
                 //spawnedPlaceableObjects.Remove(subarea);
                 spawnedPlaceableObjects.RemoveAt(index);
                 // Handle the case where the box doesn't fit
-                UE_LOG(LogTemp, Warning, TEXT("Box %s does not fit in the defined area"), *subarea->GetName());
+               // UE_LOG(LogTemp, Warning, TEXT("Box %s does not fit in the defined area"), *subarea->GetName());
             }
         }
 }
