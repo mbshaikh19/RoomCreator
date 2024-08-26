@@ -8,7 +8,7 @@
 UAreaComponent::UAreaComponent(const FObjectInitializer& ObjectInitializer)
 	:Super(ObjectInitializer)
 {
-	SetVisibility(false);
+	SetVisibility(true);
 	SetHiddenInGame(true);
 }
 
@@ -56,9 +56,9 @@ void UAreaComponent::PlaceObjectsInGrid(FRandomStream& newStream)
         return;
     }
 
-    for (TSubclassOf<APlaceableActor> subareaSpawnClass : placeableObjectsList)
+    for (TSubclassOf<APlaceableActor> placeableActorSpawnClass : placeableObjectsList)
     {
-        APlaceableActor* actor = GetWorld()->SpawnActor<APlaceableActor>(subareaSpawnClass, FVector::ZeroVector, FRotator::ZeroRotator);
+        APlaceableActor* actor = GetWorld()->SpawnActor<APlaceableActor>(placeableActorSpawnClass, FVector::ZeroVector, FRotator::ZeroRotator);
         spawnedPlaceableObjects.Add(actor);
     }
 
@@ -176,37 +176,37 @@ void UAreaComponent::PlaceObjectsByBFD(FRandomStream& newStream)
 	}
 
     FVector boxExtent = GetScaledBoxExtent();
-    FVector BoxCenter = GetComponentLocation();
+    FVector boxLocation = GetComponentLocation();
 
-    FVector2D areaMin = FVector2D(BoxCenter.X - boxExtent.X, BoxCenter.Y - boxExtent.Y);
-    FVector2D areaMax = FVector2D(BoxCenter.X + boxExtent.X, BoxCenter.Y + boxExtent.Y);
+    FVector2D areaMin = FVector2D(boxLocation.X - boxExtent.X, boxLocation.Y - boxExtent.Y);
+    FVector2D areaMax = FVector2D(boxLocation.X + boxExtent.X, boxLocation.Y + boxExtent.Y);
 
-    for (TSubclassOf<APlaceableActor> subareaSpawnClass : placeableObjectsList)
+    for (TSubclassOf<APlaceableActor> placeableActorSpawnClass : placeableObjectsList)
     {
-        APlaceableActor* parentArea = GetWorld()->SpawnActor<APlaceableActor>(subareaSpawnClass, FVector::ZeroVector, FRotator::ZeroRotator);
-        spawnedPlaceableObjects.Add(parentArea);
+        APlaceableActor* spawnedActor = GetWorld()->SpawnActor<APlaceableActor>(placeableActorSpawnClass, FVector::ZeroVector, FRotator::ZeroRotator);
+        spawnedPlaceableObjects.Add(spawnedActor);
     }
-        FVector2D CurrentPosition = areaMin;
+        FVector2D currentPosition = areaMin;
 
         for (int32 index = 0; index < spawnedPlaceableObjects.Num(); )
         {
-            APlaceableActor* subarea = spawnedPlaceableObjects[index];
-            if (!subarea)
+            APlaceableActor* currentSpawnedActor = spawnedPlaceableObjects[index];
+            if (!currentSpawnedActor)
                 continue;
 
-            FVector2D BoxSize(subarea->GetActorSize().X, subarea->GetActorSize().Y);
-            FVector2D RotatedBoxSize(subarea->GetActorSize().Y, subarea->GetActorSize().X);
+            FVector2D BoxSize(currentSpawnedActor->GetActorSize().X, currentSpawnedActor->GetActorSize().Y);
+            FVector2D RotatedBoxSize(currentSpawnedActor->GetActorSize().Y, currentSpawnedActor->GetActorSize().X);
 
-            bool bDoesBoxFit = CurrentPosition.X + BoxSize.X <= areaMax.X &&
-                CurrentPosition.Y + BoxSize.Y <= areaMax.Y;
+            bool bDoesBoxFit = currentPosition.X + BoxSize.X <= areaMax.X &&
+                currentPosition.Y + BoxSize.Y <= areaMax.Y;
 
-            bool bDoesRotatedBoxFit = CurrentPosition.X + RotatedBoxSize.X <= areaMax.X &&
-                CurrentPosition.Y + RotatedBoxSize.Y <= areaMax.Y;
+            bool bDoesRotatedBoxFit = currentPosition.X + RotatedBoxSize.X <= areaMax.X &&
+                currentPosition.Y + RotatedBoxSize.Y <= areaMax.Y;
 
             if (bDoesBoxFit || bDoesRotatedBoxFit)
             {
                 FVector2D fitBoxSize;
-                FRotator BoxRotation = FRotator::ZeroRotator;
+                FRotator fitBoxOrientation = FRotator::ZeroRotator;
 
                 if (bDoesBoxFit)
                 {
@@ -215,24 +215,24 @@ void UAreaComponent::PlaceObjectsByBFD(FRandomStream& newStream)
                 else if (bDoesRotatedBoxFit)
                 {
                     fitBoxSize = RotatedBoxSize;
-                    BoxRotation = FRotator(0, 90, 0);
+                    fitBoxOrientation = FRotator(0, 90, 0);
                 }
 
-                FVector NewLocation(CurrentPosition.X + fitBoxSize.X / 2, CurrentPosition.Y + fitBoxSize.Y / 2, 0.0f);
-                subarea->SetActorLocation(NewLocation);
-                subarea->SetActorRotation(BoxRotation);
-                CurrentPosition.X += fitBoxSize.X;
+                FVector newLocation(currentPosition.X + fitBoxSize.X / 2, currentPosition.Y + fitBoxSize.Y / 2, 0.0f);
+                currentSpawnedActor->SetActorLocation(newLocation);
+                currentSpawnedActor->SetActorRotation(fitBoxOrientation);
+                currentPosition.X += fitBoxSize.X;
 
-                if (CurrentPosition.X + fitBoxSize.X > areaMax.X)
+                if (currentPosition.X + fitBoxSize.X > areaMax.X)
                 {
-                    CurrentPosition.X = areaMin.X;
-                    CurrentPosition.Y += fitBoxSize.Y;
+                    currentPosition.X = areaMin.X;
+                    currentPosition.Y += fitBoxSize.Y;
                 }
                 index++;
             }
             else
             {
-                subarea->Destroy();
+                currentSpawnedActor->Destroy();
                 spawnedPlaceableObjects.RemoveAt(index);
             }
         }
