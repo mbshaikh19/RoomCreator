@@ -34,7 +34,7 @@ enum class ECallType : uint8
 	ManualGenerate
 };
 
-UCLASS()
+UCLASS(meta = (BlueprintSpawnableComponent))
 class AUTOROOMCREATOR_API UAreaComponent : public UBoxComponent
 {
 	GENERATED_BODY()
