@@ -32,14 +32,16 @@ void URoomUI::OnButtonClicked()
            // UE_LOG(LogTemp, Warning, TEXT("oooo OnButtonClicked() step 03"));
             if (floorAreaManager->seedModify.IsBound())
             {
-                newStream.Initialize(newSeed);
+                AFloorAreaManager::randomStream.Initialize(newSeed);
                 //UE_LOG(LogTemp, Warning, TEXT("oooo OnButtonClicked() step 04"));
-                floorAreaManager->seedModify.Broadcast(newStream);
+                UE_LOG(LogTemp, Warning, TEXT("oooo OnButtonClicked seed value = %d"), AFloorAreaManager::randomStream.GetCurrentSeed())
+                floorAreaManager->seedModify.Broadcast(AFloorAreaManager::randomStream);
+
             }
         }
         else {
             //UE_LOG(LogTemp, Warning, TEXT("oooo OnButtonClicked() step 05"));
         }
     }
-
+    UE_LOG(LogTemp, Warning, TEXT("oooo OnButtonClicked 2 seed value = %d"), AFloorAreaManager::randomStream.GetCurrentSeed())
 }

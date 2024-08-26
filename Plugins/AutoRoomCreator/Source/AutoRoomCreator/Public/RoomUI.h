@@ -17,7 +17,7 @@ class AUTOROOMCREATOR_API URoomUI : public UUserWidget
 	GENERATED_BODY()
 
 public:
-    FRandomStream newStream;
+    //FRandomStream newStream;
 
 public:
     virtual void NativeConstruct() override;

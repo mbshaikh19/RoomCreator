@@ -34,6 +34,14 @@ enum class ECallType : uint8
 	ManualGenerate
 };
 
+UENUM(BlueprintType)
+enum class EObjectDirection : uint8
+{
+	InheritComponentRotation,
+	LookAtEachOther,
+	LookAtPoint
+};
+
 UCLASS(meta = (BlueprintSpawnableComponent))
 class AUTOROOMCREATOR_API UAreaComponent : public UBoxComponent
 {
@@ -53,10 +61,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Placeable")
 	EGridDivisionMode gridDivisionMode;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Placeable")
+	EObjectDirection objectDirection;
+
+	//FRandomStream randomSeed;
+
 private:
 	TArray<APlaceableActor*> spawnedPlaceableObjects;
-
-	FRandomStream randomSeed;
 	
 protected:
 	virtual void BeginPlay() override;
@@ -71,9 +82,9 @@ public:
 	UFUNCTION()
 	void SetRandomSeed(FRandomStream &newStream);
 
-	void PlaceObjectsInGrid();
+	void PlaceObjectsInGrid(FRandomStream& newStream);
 
-	void PlaceObjectsByBFD();
+	void PlaceObjectsByBFD(FRandomStream& newStream);
 
 	void AssignDynamicDelegate(AFloorAreaManager* floorAreaManager);
 

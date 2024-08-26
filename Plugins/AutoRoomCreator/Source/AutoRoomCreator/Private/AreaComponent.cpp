@@ -17,16 +17,17 @@ UAreaComponent::UAreaComponent(const FObjectInitializer& ObjectInitializer)
 
 void UAreaComponent::SetRandomSeed(FRandomStream& newStream)
 {
-    randomSeed = newStream;
+    UE_LOG(LogTemp, Warning, TEXT("oooo SetRandomSeed() UAreaComponent seed value = %d"), AFloorAreaManager::randomStream);
+    //randomSeed = newStream;
     CleanPreviousResult();
-    shuffleList(newStream);
+    shuffleList(AFloorAreaManager::randomStream);
     if (placementAlgorithm == EPlacementAlgoType::BFDBased)
     {
-        PlaceObjectsByBFD();
+        PlaceObjectsByBFD(AFloorAreaManager::randomStream);
     }
     else
     {
-        PlaceObjectsInGrid();
+        PlaceObjectsInGrid(AFloorAreaManager::randomStream);
     }
 }
 
@@ -113,7 +114,7 @@ void UAreaComponent::PlaceObjectsInGrid()
 */
 
 
-void UAreaComponent::PlaceObjectsInGrid()
+void UAreaComponent::PlaceObjectsInGrid(FRandomStream& newStream)
 {
     int32 placeableListLength = placeableObjectsList.Num();
     if (placeableListLength <= 0)
@@ -175,19 +176,19 @@ void UAreaComponent::PlaceObjectsInGrid()
         {
             row = i / gridSizeY;
             col = i % gridSizeY;
-            UE_LOG(LogTemp, Warning, TEXT("oooo actor name = %s UAreaComponent = %s  PlaceObjectsInGrid() row = %d , col = %d  gridSizeX = %d  gridSizeY = %d step01"), *GetAttachParentActor()->GetName(), *GetName(), row, col, gridSizeX, gridSizeY);
+            //UE_LOG(LogTemp, Warning, TEXT("oooo actor name = %s UAreaComponent = %s  PlaceObjectsInGrid() row = %d , col = %d  gridSizeX = %d  gridSizeY = %d step01"), *GetAttachParentActor()->GetName(), *GetName(), row, col, gridSizeX, gridSizeY);
         }
         else if (sizeOffsetY == 0 && sizeOffsetX > 0)
         {
             row = i / gridSizeX;
             col = i % gridSizeX;
-            UE_LOG(LogTemp, Warning, TEXT("oooo actor name = %s UAreaComponent = %s  PlaceObjectsInGrid() row = %d , col = %d  gridSizeX = %d  gridSizeY = %d step02"), *GetAttachParentActor()->GetName(), *GetName(), row, col, gridSizeX, gridSizeY);
+            //UE_LOG(LogTemp, Warning, TEXT("oooo actor name = %s UAreaComponent = %s  PlaceObjectsInGrid() row = %d , col = %d  gridSizeX = %d  gridSizeY = %d step02"), *GetAttachParentActor()->GetName(), *GetName(), row, col, gridSizeX, gridSizeY);
         }
         else
         {
             row = i / gridSizeY;
             col = i % gridSizeY;
-            UE_LOG(LogTemp, Warning, TEXT("oooo actor name = %s UAreaComponent = %s  PlaceObjectsInGrid() row = %d , col = %d  gridSizeX = %d  gridSizeY = %d step03"), *GetAttachParentActor()->GetName(), *GetName(), row, col, gridSizeX, gridSizeY);
+            //UE_LOG(LogTemp, Warning, TEXT("oooo actor name = %s UAreaComponent = %s  PlaceObjectsInGrid() row = %d , col = %d  gridSizeX = %d  gridSizeY = %d step03"), *GetAttachParentActor()->GetName(), *GetName(), row, col, gridSizeX, gridSizeY);
         }
         
         FVector gridPosition = FVector(row * cellSizeX, col * cellSizeY, 0.0f);
@@ -202,7 +203,55 @@ void UAreaComponent::PlaceObjectsInGrid()
 
         //FVector placeableActorSize = spawnedPlaceableObjects[i]->GetActorSize();
         spawnedPlaceableObjects[i]->SetActorLocation(rotatedGridPosition);
-        spawnedPlaceableObjects[i]->SetActorRotation(boxRotation);
+        //spawnedPlaceableObjects[i]->areaComponent->randomSeed = newStream;
+        if (objectDirection == EObjectDirection::InheritComponentRotation)
+        {
+            spawnedPlaceableObjects[i]->SetActorRotation(boxRotation);
+        }
+        else if (objectDirection == EObjectDirection::LookAtEachOther)
+        {
+            if (i % 2 == 0)
+            {
+                spawnedPlaceableObjects[i]->SetActorRotation(boxRotation);
+            }
+            else
+            {
+                int32 previousIndex = i - 1;
+                FVector previousObjectLoc = spawnedPlaceableObjects[previousIndex]->GetActorLocation();
+                FVector objectDifferenceVect = previousObjectLoc - rotatedGridPosition;
+                FRotator currentObjectDirection = objectDifferenceVect.Rotation();
+                //FRotator previousDirectionRot = spawnedPlaceableObjects[previousIndex]->GetActorRotation();
+                float yaw = AFloorAreaManager::randomStream.FRandRange(currentObjectDirection.Yaw - 110.0f, currentObjectDirection.Yaw - 70.0f);
+                spawnedPlaceableObjects[i]->SetActorRotation(FRotator(boxRotation.Pitch, yaw, boxRotation.Roll));
+                UE_LOG(LogTemp, Warning, TEXT("oooo actor name  %s yaw = %f 1 seed value = %d"),*spawnedPlaceableObjects[i]->GetName(), yaw, newStream);
+                objectDifferenceVect = rotatedGridPosition - previousObjectLoc;
+                currentObjectDirection = objectDifferenceVect.Rotation();
+                //FRotator previousDirectionRot = spawnedPlaceableObjects[previousIndex]->GetActorRotation();
+                yaw = AFloorAreaManager::randomStream.FRandRange(currentObjectDirection.Yaw - 110.0f, currentObjectDirection.Yaw - 70.0f);
+                spawnedPlaceableObjects[previousIndex]->SetActorRotation(FRotator(boxRotation.Pitch, yaw, boxRotation.Roll));
+                UE_LOG(LogTemp, Warning, TEXT("oooo actor name  %s yaw = %f 2 seed value = %d "), *spawnedPlaceableObjects[previousIndex]->GetName(), yaw, newStream);
+            }
+        }
+        else if (objectDirection == EObjectDirection::LookAtPoint)
+        {
+          /*  UStaticMeshComponent* staticMeshComp =GetOwner()->FindComponentByTag<UStaticMeshComponent>(TEXT("ParentStaticMesh"));
+            if (staticMeshComp)
+            {
+                if (staticMeshComp->GetStaticMesh())
+                {
+                    FVector parentObjectLoc = staticMeshComp->GetComponentLocation();
+                }
+            }*/
+
+            FVector parentObjectLoc = GetOwner()->GetActorLocation();
+            FVector objectDifferenceVect = parentObjectLoc - rotatedGridPosition;
+            FRotator currentObjectDirection = objectDifferenceVect.Rotation();
+            //FRotator previousDirectionRot = GetOwner()->GetActorRotation();
+            float yaw = AFloorAreaManager::randomStream.FRandRange(currentObjectDirection.Yaw - 80.0f, currentObjectDirection.Yaw - 100.0f);
+            spawnedPlaceableObjects[i]->SetActorRotation(FRotator(boxRotation.Pitch, yaw, boxRotation.Roll));
+            UE_LOG(LogTemp, Warning, TEXT("oooo actor name  %s yaw = %f seed value = %d "), *spawnedPlaceableObjects[i]->GetName(), yaw, newStream);
+        }
+
     }
     /*
     int32 placeableListIndex = 0;
@@ -232,8 +281,9 @@ void UAreaComponent::PlaceObjectsInGrid()
 }
 
 
-void UAreaComponent::PlaceObjectsByBFD()
+void UAreaComponent::PlaceObjectsByBFD(FRandomStream& newStream)
 {
+    UE_LOG(LogTemp, Warning, TEXT("oooo PlaceObjectsByBFD seed value = %d"), newStream)
     int32 placeableListLength = placeableObjectsList.Num();
 	if (placeableListLength <= 0)
 	{
@@ -347,9 +397,10 @@ void UAreaComponent::shuffleList(FRandomStream& newStream)
 
         placeableObjectsList.Swap(indexA, indexB);
     }
+    UE_LOG(LogTemp, Warning, TEXT("oooo UAreaComponent shuffleList seed value = %d"), newStream);
 }
 
 void UAreaComponent::DelayedCall()
 {
-    SetRandomSeed(randomSeed);
+    SetRandomSeed(AFloorAreaManager::randomStream);
 }

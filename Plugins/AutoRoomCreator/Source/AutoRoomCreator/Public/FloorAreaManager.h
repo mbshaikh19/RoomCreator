@@ -19,7 +19,7 @@ public:
 	UPROPERTY()
 	FSeedModify seedModify;
 
-	FRandomStream randomStream;
+	static FRandomStream randomStream;
 
 protected:
 	// Called when the game starts or when spawned

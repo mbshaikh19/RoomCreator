@@ -7,7 +7,9 @@
 #include "Kismet/GameplayStatics.h"
 
 AFloorAreaManager* AFloorAreaManager::floorAreaManager;
-// Sets default values
+
+FRandomStream AFloorAreaManager::randomStream;
+
 AFloorAreaManager::AFloorAreaManager()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -46,6 +48,6 @@ void AFloorAreaManager::Tick(float DeltaTime)
 void AFloorAreaManager::SeedModified(FRandomStream& newStream)
 {
 	//randomStream.Initialize(inSeed);
-	UE_LOG(LogTemp, Warning, TEXT("oooo Seed modified () FloorAreaManager"));
+	UE_LOG(LogTemp, Warning, TEXT("oooo Seed modified () FloorAreaManager seed value = %d"), AFloorAreaManager::randomStream);
 }
 
