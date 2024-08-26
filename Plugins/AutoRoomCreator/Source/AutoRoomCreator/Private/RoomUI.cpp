@@ -1,6 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "RoomUI.h"
 #include "Engine/World.h"
 #include "GameFramework/Actor.h"
@@ -22,26 +19,19 @@ void URoomUI::NativeConstruct()
 
 void URoomUI::OnButtonClicked()
 {
-    //UE_LOG(LogTemp, Warning, TEXT("oooo OnButtonClicked() step 01"));
     if (seedInputTextBox)
     {
-        //UE_LOG(LogTemp, Warning, TEXT("oooo OnButtonClicked() step 02"));
         int32 newSeed = 0;
         if (FDefaultValueHelper::ParseInt(seedInputTextBox->GetText().ToString(), newSeed))
         {
-           // UE_LOG(LogTemp, Warning, TEXT("oooo OnButtonClicked() step 03"));
             if (floorAreaManager->seedModify.IsBound())
             {
                 AFloorAreaManager::randomStream.Initialize(newSeed);
-                //UE_LOG(LogTemp, Warning, TEXT("oooo OnButtonClicked() step 04"));
-                UE_LOG(LogTemp, Warning, TEXT("oooo OnButtonClicked seed value = %d"), AFloorAreaManager::randomStream.GetCurrentSeed())
                 floorAreaManager->seedModify.Broadcast(AFloorAreaManager::randomStream);
-
             }
         }
         else {
-            //UE_LOG(LogTemp, Warning, TEXT("oooo OnButtonClicked() step 05"));
+            UE_LOG(LogTemp, Warning, TEXT("Invalid Seed Input"));
         }
     }
-    UE_LOG(LogTemp, Warning, TEXT("oooo OnButtonClicked 2 seed value = %d"), AFloorAreaManager::randomStream.GetCurrentSeed())
 }

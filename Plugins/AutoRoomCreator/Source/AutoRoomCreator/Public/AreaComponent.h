@@ -1,14 +1,9 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Components/BoxComponent.h"
 #include "AreaComponent.generated.h"
 
-/**
- * 
- */
 class APlaceableActor;
 class AFloorAreaManager;
 
@@ -63,8 +58,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Placeable")
 	EObjectDirection objectDirection;
-
-	//FRandomStream randomSeed;
 
 private:
 	TArray<APlaceableActor*> spawnedPlaceableObjects;

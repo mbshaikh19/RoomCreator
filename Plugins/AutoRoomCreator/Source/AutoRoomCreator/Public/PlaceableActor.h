@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -15,7 +13,7 @@ class AUTOROOMCREATOR_API APlaceableActor : public AActor
 	GENERATED_BODY()
 	
 public:	
-	// Sets default values for this actor's properties
+
 	APlaceableActor();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Placeable")
@@ -26,13 +24,8 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Placeable")
 	UAreaComponent* areaComponent;
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+public:
 
 	FVector GetStaticMeshComponentSize();
 
